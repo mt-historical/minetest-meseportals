@@ -35,6 +35,7 @@ minetest.register_abm({
 					minetest.sound_play("meseportal_open", {pos = pos, max_hear_distance = 72,})
 				end
 				current_portal["updateme"] = false
+				meseportals.save_data(current_portal["owner"])
 			end
 			
 			local meta = minetest.get_meta(pos)
