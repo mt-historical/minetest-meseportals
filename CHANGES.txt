@@ -9,7 +9,7 @@ Changes by Piezo_:
 	Visual style and sounds completely re-done to add originality
 	Public portals can now be used by anyone, but only the portal's owner can set the description and public/private state.
 	Server operators can disable "ownership" of portals by setting meseportals.allowPrivatePortals (in init.lua) to false
-    Added search bar, and formspec security measures.
+	Added search bar, and formspec security measures.
 	A maximum number of allowed portals per player can be set via meseportals.maxPlayerPortals
 	Added permissions "msp_admin", which allows full control and access to all portals, and "msp_unlimited", which bypasses the portal cap.
 	Reorganized/Split up files
