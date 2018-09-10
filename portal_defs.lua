@@ -23,13 +23,17 @@ minetest.register_node("meseportals:portal_collider",{
 
 
 function placeportalCollider(pos, pos1)
-	if minetest.get_node(pos).name == "air" or minetest.registered_nodes[minetest.get_node(pos).name].buildable_to then
-		core.set_node(pos,{name="meseportals:portal_collider"})
-		local meta = minetest.get_meta(pos)
-		meta:set_string("portal", minetest.pos_to_string(pos1))
-		return true
+	if minetest.registered_nodes[minetest.get_node(pos).name] then
+		if minetest.get_node(pos).name == "air" or minetest.registered_nodes[minetest.get_node(pos).name].buildable_to then
+			core.set_node(pos,{name="meseportals:portal_collider"})
+			local meta = minetest.get_meta(pos)
+			meta:set_string("portal", minetest.pos_to_string(pos1))
+			return true
+		else
+			return false
+		end
 	else
-		return false
+		return false --Unknown node
 	end
 end
 
@@ -256,9 +260,18 @@ minetest.register_node("meseportals:portalnode_off",{
 	on_place = function(itemstack, placer, pointed_thing)
 		if not minetest.is_protected(pos, placer:get_player_name()) then
 			local pos = pointed_thing.above
+			if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name] then
+				if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].on_rightclick ~= nil then --Doors, chests, other portals, etc.
+					return nil
+				end
+				if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].buildable_to then
+					pos = pointed_thing.under
+				end
+			end
 			minetest.rotate_node(itemstack, placer, pointed_thing) --This handles creative inventory correctly. Aside from that, it's basically useless.
 			local node = minetest.get_node(pos)
 			local meta = minetest.get_meta(pos)
+			
 			node.param2 = minetest.dir_to_facedir(placer:get_look_dir())
 			if placer:get_player_control().sneak then
 				minetest.set_node(pos, node)
