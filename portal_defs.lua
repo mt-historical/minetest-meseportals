@@ -15,6 +15,7 @@ minetest.register_node("meseportals:portal_collider",{
 	groups = {not_in_creative_inventory=1},
 	sunlight_propagates = true,
 	can_dig = false,
+	paramtype = "light",
 	selection_box = {
 	type = "fixed",
 	fixed={0.0,0.0,0.0,0.0,0.0,0.0}},
@@ -192,28 +193,28 @@ minetest.register_node("meseportals:portalnode_on",{
 		--	length = 2.0,
 		--	},
 		--},
-		{name = "meseportal_0004.png",--Portal
+		{name = "meseportal_vortex.png",--Portal
 		animation = {
 			type = "vertical_frames",
-			length = 1.0,
+			length = 0.6,
 			},
 		},
-		{name = "meseportal_0003.png", --Buttons
-		animation = {
-			type = "vertical_frames",
-			},
-		},
-		{name = "meseportal_0003.png", --Cables
+		{name = "meseportal_mese_on.png", --Buttons
 		animation = {
 			type = "vertical_frames",
 			},
 		},
-		{name = "meseportal_0003.png", --Coil
+		{name = "meseportal_mese_on.png", --Cables
 		animation = {
 			type = "vertical_frames",
 			},
 		},
-		{name = "meseportal_0001.png"}, --Frame
+		{name = "meseportal_mese_on.png", --Coil
+		animation = {
+			type = "vertical_frames",
+			},
+		},
+		{name = "meseportal_frame.png"}, --Frame
 	},
 	drawtype = "mesh",
 	mesh = "meseportal.obj",
@@ -237,10 +238,10 @@ minetest.register_node("meseportals:portalnode_off",{
 	wield_image = "meseportal.png",
 	tiles = {
 		{name = "meseportal_null.png"},
-		{name = "meseportal_0002.png"},
-		{name = "meseportal_0002.png"},
-		{name = "meseportal_0002.png"},
-		{name = "meseportal_0001.png"},
+		{name = "meseportal_mese_off.png"},
+		{name = "meseportal_mese_off.png"},
+		{name = "meseportal_mese_off.png"},
+		{name = "meseportal_frame.png"},
 	},
 	groups = msp_groups1,
 	paramtype2 = "facedir",
