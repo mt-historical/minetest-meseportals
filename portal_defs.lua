@@ -256,13 +256,17 @@ minetest.register_node("meseportals:portalnode_off",{
 	on_place = function(itemstack, placer, pointed_thing)
 		if not minetest.is_protected(pos, placer:get_player_name()) then
 			local pos = pointed_thing.above
-			local meta = minetest.get_meta(pos)
 			minetest.rotate_node(itemstack, placer, pointed_thing) --This handles creative inventory correctly. Aside from that, it's basically useless.
 			local node = minetest.get_node(pos)
+			local meta = minetest.get_meta(pos)
 			node.param2 = minetest.dir_to_facedir(placer:get_look_dir())
-			meta:set_string("dont_destroy","true")
+			if placer:get_player_control().sneak then
 				minetest.set_node(pos, node)
-			meta:set_string("dont_destroy","false")
+			else
+				minetest.remove_node(pos)
+				pos.y = pos.y + 1
+				minetest.set_node(pos, node)
+			end
 			placeportal(placer,pos)
 			return itemstack
 		end
