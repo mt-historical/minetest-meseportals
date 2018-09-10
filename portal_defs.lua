@@ -196,7 +196,6 @@ minetest.register_node("meseportals:portalnode_on",{
 		{name = "meseportal_vortex.png",--Portal
 		animation = {
 			type = "vertical_frames",
-			length = 0.6,
 			},
 		},
 		{name = "meseportal_mese_on.png", --Buttons
