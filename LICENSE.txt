@@ -4,7 +4,7 @@ Portal, item and controller textures: CC BY-SA (4.0) by Piezo_
 GUI Elements: See <https://github.com/minetest-mods/unified_inventory/blob/master/README.md>
 Models: CC BY-SA (4.0) by Piezo_
 Sounds: 
-	Portal noises (open, close, warp): CC BY (4.0) by Piezo_
+	Portal noises (open, close, warp): CC BY-SA (4.0) by Piezo_
 	GUI sounds: (click and paperflip2.ogg) See <https://github.com/minetest-mods/unified_inventory/blob/master/README.md>
 
 Source code:
