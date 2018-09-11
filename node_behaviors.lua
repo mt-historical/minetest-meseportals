@@ -89,7 +89,7 @@ minetest.register_globalstep(function(dtime)
 								local dest_angle = ((dir1 - 2) * -90) 
 								
 								if object:get_look_horizontal() then
-									dest_angle = (math.deg(object:get_look_yaw()) + 90) + ((dir1 - dir) * -90)
+									dest_angle = (math.deg(object:get_look_horizontal()) + 180) + ((dir1 - dir) * -90)
 								end
 								
 								if dir == 1 or dir == 2 then
