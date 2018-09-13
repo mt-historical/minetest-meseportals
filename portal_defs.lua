@@ -22,19 +22,19 @@ minetest.register_node("meseportals:portal_collider",{
 })
 
 
-function placeportalCollider(pos, pos1)
-	if minetest.registered_nodes[minetest.get_node(pos).name] then
-		if minetest.get_node(pos).name == "air" or minetest.registered_nodes[minetest.get_node(pos).name].buildable_to then
-			core.set_node(pos,{name="meseportals:portal_collider"})
-			local meta = minetest.get_meta(pos)
-			meta:set_string("portal", minetest.pos_to_string(pos1))
-			return true
-		else
-			return false
+function placeportalCollider(pos, pos1, player)
+	local placed = false
+	if minetest.check_player_privs(player, {protection_bypass=true}) or not minetest.is_protected(pos, player:get_player_name()) then
+		if minetest.registered_nodes[minetest.get_node(pos).name] then
+			if minetest.get_node(pos).name == "air" or minetest.registered_nodes[minetest.get_node(pos).name].buildable_to then
+				core.set_node(pos,{name="meseportals:portal_collider"})
+				local meta = minetest.get_meta(pos)
+				meta:set_string("portal", minetest.pos_to_string(pos1))
+				placed = true
+			end
 		end
-	else
-		return false --Unknown node
 	end
+	return placed
 end
 
 local function placeportal(player,pos)
@@ -45,70 +45,70 @@ local function placeportal(player,pos)
 		if dir == 1
 		or dir == 3 then
 			pos1.z=pos1.z+2
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y+1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y+1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y+1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.z=pos1.z-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.z=pos1.z-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.z=pos1.z-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.z=pos1.z-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y-1
-			placeportalCollider(pos1, pos)
+			placeportalCollider(pos1, pos, player)
 			pos1.z=pos1.z+1
-			placeportalCollider(pos1, pos)
+			placeportalCollider(pos1, pos, player)
 			pos1.z=pos1.z+1
-			placeportalCollider(pos1, pos)
+			placeportalCollider(pos1, pos, player)
 			pos1.z=pos1.z+1
-			placeportalCollider(pos1, pos)
+			placeportalCollider(pos1, pos, player)
 			pos1.z=pos1.z+1
-			placeportalCollider(pos1, pos)
+			placeportalCollider(pos1, pos, player)
 		else
 			pos1.x=pos1.x+2
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y+1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y+1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y+1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.x=pos1.x-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.x=pos1.x-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.x=pos1.x-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.x=pos1.x-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y-1
-			hadRoom = hadRoom and placeportalCollider(pos1, pos)
+			hadRoom = hadRoom and placeportalCollider(pos1, pos, player)
 			pos1.y=pos1.y-1
-			placeportalCollider(pos1, pos)
+			placeportalCollider(pos1, pos, player)
 			pos1.x=pos1.x+1
-			placeportalCollider(pos1, pos)
+			placeportalCollider(pos1, pos, player)
 			pos1.x=pos1.x+1
-			placeportalCollider(pos1, pos)
+			placeportalCollider(pos1, pos, player)
 			pos1.x=pos1.x+1
-			placeportalCollider(pos1, pos)
+			placeportalCollider(pos1, pos, player)
 			pos1.x=pos1.x+1
-			placeportalCollider(pos1, pos)
+			placeportalCollider(pos1, pos, player)
 		end
 		if hadRoom then
 			meseportals.swap_portal_node(pos,"meseportals:portalnode_off",dir)
@@ -157,19 +157,20 @@ local function removeportal(pos)
 			meseportals.deactivatePortal(meseportals.findPortal(pos)["destination"])
 		end
 		meseportals.unregisterPortal(pos)
-		minetest.add_item(pos, {name="meseportals:portalnode_off", count=1, wear=0, metadata=""})
 	end
 end
 
 local function portalCanDig(pos, player)
-	local isAdmin = minetest.check_player_privs(player, {msp_admin=true})
-	if meseportals.allowPrivatePortals and meseportals.findPortal(pos) ~= nil and not isAdmin then --Anyone can clean up a busted portal
-		if player:get_player_name() ~= meseportals.findPortal(pos)["owner"] then
-			minetest.chat_send_player(player:get_player_name(), "This portal belongs to " ..meseportals.findPortal(pos)["owner"] .."!")
+	if minetest.check_player_privs(player, {protection_bypass=true}) or not minetest.is_protected(pos, player:get_player_name()) then
+		local isAdmin = minetest.check_player_privs(player, {msp_admin=true})
+		if meseportals.allowPrivatePortals and meseportals.findPortal(pos) ~= nil and not isAdmin then --Anyone can clean up a busted portal
+			if player:get_player_name() ~= meseportals.findPortal(pos)["owner"] then
+				minetest.chat_send_player(player:get_player_name(), "This portal belongs to " ..meseportals.findPortal(pos)["owner"] .."!")
+			end
+			return player:get_player_name() == meseportals.findPortal(pos)["owner"]
+		else
+			return true
 		end
-		return player:get_player_name() == meseportals.findPortal(pos)["owner"]
-	else
-		return true
 	end
 end
 
@@ -223,7 +224,7 @@ minetest.register_node("meseportals:portalnode_on",{
 	mesh = "meseportal.obj",
 	visual_scale = 5.0,
 	groups = msp_groups,
-	drop = {name="meseportals:portalnode_off", count=1, wear=0, metadata=""},
+	drop = "meseportals:portalnode_off",
 	paramtype2 = "facedir",
 	paramtype = "light",
 	light_source = 5,
@@ -250,7 +251,7 @@ minetest.register_node("meseportals:portalnode_off",{
 	paramtype2 = "facedir",
 	paramtype = "light",
 	drawtype = "mesh",
-	drop = {name="meseportals:portalnode_off", count=1, wear=0, metadata=""},
+	drop = "meseportals:portalnode_off",
 	mesh = "meseportal.obj",
 	visual_scale = 5.0,
 	selection_box = msp_selection_box,
@@ -258,16 +259,16 @@ minetest.register_node("meseportals:portalnode_off",{
 	can_dig = portalCanDig,
 	on_destruct = removeportal,
 	on_place = function(itemstack, placer, pointed_thing)
-		if not minetest.is_protected(pos, placer:get_player_name()) then
-			local pos = pointed_thing.above
-			if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name] then
-				if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].on_rightclick ~= nil then --Doors, chests, other portals, etc.
-					return nil
-				end
-				if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].buildable_to then
-					pos = pointed_thing.under
-				end
+		local pos = pointed_thing.above
+		if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name] then
+			if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].on_rightclick ~= nil then --Doors, chests, other portals, etc.
+				return nil
 			end
+			if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].buildable_to then
+				pos = pointed_thing.under
+			end
+		end
+		if minetest.check_player_privs(placer, {protection_bypass=true}) or not minetest.is_protected(pos, placer:get_player_name()) then
 			minetest.rotate_node(itemstack, placer, pointed_thing) --This handles creative inventory correctly. Aside from that, it's basically useless.
 			local node = minetest.get_node(pos)
 			local meta = minetest.get_meta(pos)
@@ -306,6 +307,7 @@ minetest.register_node("meseportals:linked_portal_controller", {
 	paramtype = "light",
 	paramtype2 = "facedir",
 	mesh = "meseportal_controller.obj",
+	drop = "meseportals:unlinked_portal_controller",
 	groups = msp_groups,
 	stack_max = 1,
 	walkable = true,
@@ -319,32 +321,30 @@ minetest.register_node("meseportals:linked_portal_controller", {
 		fixed={{-0.425,-0.325,0.5,0.45,0.325,0.425},},
 	},
 	on_place = function(itemstack, placer, pointed_thing)
-		local rightClicked = minetest.get_node(pointed_thing.under).name
-		if rightClicked == "meseportals:portalnode_on" or rightClicked == "meseportals:portalnode_off" then
-			local portal = meseportals.findPortal(pointed_thing.under)
-			if portal then
-				if portal["type"] == "public" or placer:get_player_name() == portal["owner"] or minetest.check_player_privs(placer, {msp_admin=true}) or not meseportals.allowPrivatePortals then
-					minetest.chat_send_player(placer:get_player_name(), "Controller linked to "..portal["description"])
-					itemstack:get_meta():set_string("portal", minetest.pos_to_string(pointed_thing.under))
-					itemstack:get_meta():set_string("description", "Linked Portal Controller ["..portal["description"].."]")
-					return itemstack
+		if minetest.check_player_privs(placer, {protection_bypass=true}) or not minetest.is_protected(pointed_thing.above, placer:get_player_name()) then
+			local rightClicked = minetest.get_node(pointed_thing.under).name
+			if rightClicked == "meseportals:portalnode_on" or rightClicked == "meseportals:portalnode_off" then
+				local portal = meseportals.findPortal(pointed_thing.under)
+				if portal then
+					if portal["type"] == "public" or placer:get_player_name() == portal["owner"] or minetest.check_player_privs(placer, {msp_admin=true}) or not meseportals.allowPrivatePortals then
+						minetest.chat_send_player(placer:get_player_name(), "Controller linked to "..portal["description"])
+						itemstack:get_meta():set_string("portal", minetest.pos_to_string(pointed_thing.under))
+						itemstack:get_meta():set_string("description", "Linked Portal Controller ["..portal["description"].."]")
+						return itemstack
+					else
+						minetest.chat_send_player(placer:get_player_name(), portal["owner"] .." has set this portal to private.")
+					end
 				else
-					minetest.chat_send_player(placer:get_player_name(), portal["owner"] .." has set this portal to private.")
+					minetest.chat_send_player(placer:get_player_name(), "This portal is broken.")
 				end
 			else
-				minetest.chat_send_player(placer:get_player_name(), "This portal is broken.")
+				minetest.rotate_node(itemstack, placer, pointed_thing)
+				core.set_node(pointed_thing.above, {name=minetest.get_node(pointed_thing.above).name, param2=minetest.dir_to_facedir(placer:get_look_dir())})
+				local meta = minetest.get_meta(pointed_thing.above)
+				meta:set_string("portal", itemstack:get_meta():get_string("portal"))
+				return itemstack
 			end
-		else
-			minetest.rotate_node(itemstack, placer, pointed_thing)
-			core.set_node(pointed_thing.above, {name=minetest.get_node(pointed_thing.above).name, param2=minetest.dir_to_facedir(placer:get_look_dir())})
-			local meta = minetest.get_meta(pointed_thing.above)
-			meta:set_string("portal", itemstack:get_meta():get_string("portal"))
-			return itemstack
 		end
-	end,
-	on_dig = function(pos, node, player)
-		minetest.add_item(pos, {name="meseportals:unlinked_portal_controller", count=1, wear=0, metadata=""})
-		minetest.remove_node(pos)
 	end,
 	on_use = function(itemstack, user)
 		local pos1 = minetest.string_to_pos(itemstack:get_meta():get_string("portal"))
@@ -365,6 +365,7 @@ minetest.register_node("meseportals:unlinked_portal_controller", {
 	paramtype = "light",
 	paramtype2 = "facedir",
 	mesh = "meseportal_controller.obj",
+	drop = "meseportals:unlinked_portal_controller",
 	groups = msp_groups1,
 	walkable = true,
 	selection_box = {
@@ -405,12 +406,6 @@ minetest.register_node("meseportals:unlinked_portal_controller", {
 			meta:set_string("portal", itemstack:get_meta():get_string("portal"))
 			return itemstack
 		end
-	end,
-	on_dig = function(pos, node, player)
-		local meta = minetest.get_meta(pos)
-		local item = {name="meseportals:unlinked_portal_controller", count=1, wear=0, metadata=""}
-		minetest.add_item(pos, item)
-		minetest.remove_node(pos)
 	end,
 	on_use = function(_, user)
 		minetest.chat_send_player(user:get_player_name(), "This controller is not linked. Link this controller to a portal by right-clicking the portal.")
