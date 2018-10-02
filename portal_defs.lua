@@ -259,21 +259,20 @@ minetest.register_node("meseportals:portalnode_off",{
 	can_dig = portalCanDig,
 	on_destruct = removeportal,
 	on_place = function(itemstack, placer, pointed_thing)
+		
 		local pos = pointed_thing.above
 		if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name] then
-			if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].on_rightclick ~= nil then --Doors, chests, other portals, etc.
-				return nil
+			if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].on_rightclick and not placer:get_player_control().sneak then
+				return minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].on_rightclick(pointed_thing.under, minetest.get_node(pointed_thing.under), placer, itemstack, pointed_thing)
 			end
 			if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].buildable_to then
 				pos = pointed_thing.under
 			end
 		end
 		if minetest.check_player_privs(placer, {protection_bypass=true}) or not minetest.is_protected(pos, placer:get_player_name()) then
-			minetest.rotate_node(itemstack, placer, pointed_thing) --This handles creative inventory correctly. Aside from that, it's basically useless.
+			minetest.item_place(itemstack, placer, pointed_thing, minetest.dir_to_facedir(placer:get_look_dir()))
 			local node = minetest.get_node(pos)
 			local meta = minetest.get_meta(pos)
-			
-			node.param2 = minetest.dir_to_facedir(placer:get_look_dir())
 			if placer:get_player_control().sneak then
 				minetest.set_node(pos, node)
 			else
@@ -323,27 +322,36 @@ minetest.register_node("meseportals:linked_portal_controller", {
 	on_place = function(itemstack, placer, pointed_thing)
 		if minetest.check_player_privs(placer, {protection_bypass=true}) or not minetest.is_protected(pointed_thing.above, placer:get_player_name()) then
 			local rightClicked = minetest.get_node(pointed_thing.under).name
-			if rightClicked == "meseportals:portalnode_on" or rightClicked == "meseportals:portalnode_off" then
-				local portal = meseportals.findPortal(pointed_thing.under)
-				if portal then
-					if portal["type"] == "public" or placer:get_player_name() == portal["owner"] or minetest.check_player_privs(placer, {msp_admin=true}) or not meseportals.allowPrivatePortals then
-						minetest.chat_send_player(placer:get_player_name(), "Controller linked to "..portal["description"])
-						itemstack:get_meta():set_string("portal", minetest.pos_to_string(pointed_thing.under))
-						itemstack:get_meta():set_string("description", "Linked Portal Controller ["..portal["description"].."]")
-						return itemstack
+			if not placer:get_player_control().sneak then
+				if rightClicked == "meseportals:portalnode_on" or rightClicked == "meseportals:portalnode_off" then
+					local portal = meseportals.findPortal(pointed_thing.under)
+					if portal then
+						if portal["type"] == "public" or placer:get_player_name() == portal["owner"] or minetest.check_player_privs(placer, {msp_admin=true}) or not meseportals.allowPrivatePortals then
+							minetest.chat_send_player(placer:get_player_name(), "Controller linked to "..portal["description"])
+							itemstack:get_meta():set_string("portal", minetest.pos_to_string(pointed_thing.under))
+							itemstack:get_meta():set_string("description", "Linked Portal Controller ["..portal["description"].."]")
+							return itemstack
+						else
+							minetest.chat_send_player(placer:get_player_name(), portal["owner"] .." has set this portal to private.")
+						end
 					else
-						minetest.chat_send_player(placer:get_player_name(), portal["owner"] .." has set this portal to private.")
+						minetest.chat_send_player(placer:get_player_name(), "This portal is broken.")
 					end
-				else
-					minetest.chat_send_player(placer:get_player_name(), "This portal is broken.")
+				elseif minetest.registered_nodes[rightClicked] and minetest.registered_nodes[rightClicked].on_rightclick then
+					return minetest.registered_nodes[rightClicked].on_rightclick(pointed_thing.under, minetest.get_node(pointed_thing.under), placer, itemstack, pointed_thing)
 				end
-			else
-				minetest.rotate_node(itemstack, placer, pointed_thing)
-				core.set_node(pointed_thing.above, {name=minetest.get_node(pointed_thing.above).name, param2=minetest.dir_to_facedir(placer:get_look_dir())})
-				local meta = minetest.get_meta(pointed_thing.above)
-				meta:set_string("portal", itemstack:get_meta():get_string("portal"))
-				return itemstack
 			end
+			local p
+			if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name] and minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].buildable_to then
+				p = pointed_thing.under
+			else
+				p = pointed_thing.above
+			end
+			local portalID = itemstack:get_meta():get_string("portal")
+			minetest.item_place(itemstack, placer, pointed_thing, minetest.dir_to_facedir(placer:get_look_dir()))
+			local meta = minetest.get_meta(p)
+			meta:set_string("portal", portalID)
+			return itemstack
 		end
 	end,
 	on_use = function(itemstack, user)
@@ -378,34 +386,34 @@ minetest.register_node("meseportals:unlinked_portal_controller", {
 	},
 	on_place = function(itemstack, placer, pointed_thing)
 		local rightClicked = minetest.get_node(pointed_thing.under).name
-		if rightClicked == "meseportals:portalnode_on" or rightClicked == "meseportals:portalnode_off" then
-			local portal = meseportals.findPortal(pointed_thing.under)
-			if portal then
-				if portal["type"] == "public" or placer:get_player_name() == portal["owner"] or minetest.check_player_privs(placer, {msp_admin=true}) then
-					minetest.chat_send_player(placer:get_player_name(), "Controller linked to "..portal["description"])
-					local newItem = itemstack:take_item()
-					local inv = placer:get_inventory()
-					newItem:set_name("meseportals:linked_portal_controller")
-					newItem:get_meta():set_string("portal", minetest.pos_to_string(pointed_thing.under))
-					newItem:get_meta():set_string("description", "Linked Portal Controller ["..portal["description"].."]")
-					
-					if inv:add_item("main", newItem):get_count() > 0 then --Not enough inventory space, drop on the ground
-						minetest.add_item(placer:get_pos(), newItem)
+		if not placer:get_player_control().sneak then
+			if rightClicked == "meseportals:portalnode_on" or rightClicked == "meseportals:portalnode_off" then
+				local portal = meseportals.findPortal(pointed_thing.under)
+				if portal then
+					if portal["type"] == "public" or placer:get_player_name() == portal["owner"] or minetest.check_player_privs(placer, {msp_admin=true}) then
+						minetest.chat_send_player(placer:get_player_name(), "Controller linked to "..portal["description"])
+						local newItem = itemstack:take_item()
+						local inv = placer:get_inventory()
+						newItem:set_name("meseportals:linked_portal_controller")
+						newItem:get_meta():set_string("portal", minetest.pos_to_string(pointed_thing.under))
+						newItem:get_meta():set_string("description", "Linked Portal Controller ["..portal["description"].."]")
+						
+						if inv:add_item("main", newItem):get_count() > 0 then --Not enough inventory space, drop on the ground
+							minetest.add_item(placer:get_pos(), newItem)
+						end
+						return itemstack
+					else
+						minetest.chat_send_player(placer:get_player_name(), portal["owner"] .." has set this portal to private.")
+						return
 					end
-					return itemstack
 				else
-					minetest.chat_send_player(placer:get_player_name(), portal["owner"] .." has set this portal to private.")
+					minetest.chat_send_player(placer:get_player_name(), "This portal is broken.")
 				end
-			else
-				minetest.chat_send_player(placer:get_player_name(), "This portal is broken.")
+			elseif minetest.registered_nodes[rightClicked] and minetest.registered_nodes[rightClicked].on_rightclick then
+				return minetest.registered_nodes[rightClicked].on_rightclick(pointed_thing.under, minetest.get_node(pointed_thing.under), placer, itemstack, pointed_thing)
 			end
-		else
-			minetest.rotate_node(itemstack, placer, pointed_thing)
-			core.set_node(pointed_thing.above, {name=minetest.get_node(pointed_thing.above).name, param2=minetest.dir_to_facedir(placer:get_look_dir())})
-			local meta = minetest.get_meta(pointed_thing.above)
-			meta:set_string("portal", itemstack:get_meta():get_string("portal"))
-			return itemstack
 		end
+		return minetest.item_place(itemstack, placer, pointed_thing, minetest.dir_to_facedir(placer:get_look_dir()))
 	end,
 	on_use = function(_, user)
 		minetest.chat_send_player(user:get_player_name(), "This controller is not linked. Link this controller to a portal by right-clicking the portal.")
