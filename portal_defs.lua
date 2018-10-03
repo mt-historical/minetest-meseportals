@@ -183,8 +183,18 @@ local msp_groups = {dig_immediate=3,oddly_breakable_by_hand=1,not_in_creative_in
 local msp_groups1 = {dig_immediate=3,oddly_breakable_by_hand=1}
 
 
-
-
+local old_pttfp = minetest.pointed_thing_to_face_pos
+minetest.pointed_thing_to_face_pos = function(placer, pointed_thing) 
+	if pointed_thing and placer and pointed_thing.above and pointed_thing.under then
+		if pointed_thing.under.x == pointed_thing.above.x and pointed_thing.under.y == pointed_thing.above.y and pointed_thing.under.z == pointed_thing.above.z then
+			return placer:get_pos()
+		else
+			return old_pttfp(placer, pointed_thing)
+		end
+	else
+		return vector.new(0,0,0)
+	end
+end
 
 minetest.register_node("meseportals:portalnode_on",{
 	tiles = {
