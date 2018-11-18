@@ -1,4 +1,5 @@
 local OB = "default:obsidian"
+local MC = "default:mese_crystal"
 local MB = "default:mese_block"
 local DI = "default:diamond"
 local MC = "default:mese_crystal"
@@ -10,9 +11,9 @@ local PS = "meseportals:portal_segment"
 minetest.register_craft({
 	output = "meseportals:tesseract_crystal",
 	recipe = {
-		{DI, MB, DI},
-		{MB, OB, MB},
-		{DI, MB, DI},
+		{DI, MC, DI},
+		{MC, OB, MC},
+		{DI, MC, DI},
 	}
 })
 
