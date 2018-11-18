@@ -23,7 +23,8 @@ minetest.register_craft({
 		{OB, OB, OB},
 		{MB, LV, MB},
 		{OB, OB, OB},
-	}
+	},
+	replacements = {{"bucket:bucket_lava", "bucket:bucket_empty"}}
 })
 
 minetest.register_craft({
