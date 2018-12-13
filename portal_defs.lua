@@ -247,7 +247,7 @@ minetest.register_node("meseportals:portalnode_on",{
 
 
 minetest.register_node("meseportals:portalnode_off",{
-	description = "Mese Portal",
+	description = "Mese Portal (Sneak+Place = Buried)",
 	inventory_image = "meseportal.png",
 	wield_image = "meseportal.png",
 	tiles = {
@@ -298,6 +298,37 @@ minetest.register_node("meseportals:portalnode_off",{
 	
 })
 
+local old_protected = minetest.is_protected
+
+local basecheck = { --f = face (x or z axis)
+	{x=0, z=0, f=0},
+	{x=1, z=0, f=1},
+	{x=2, z=0, f=1},
+	{x=-1, z=0, f=1},
+	{x=-2, z=0, f=1},
+	{x=0, z=1, f=2},
+	{x=0, z=2, f=2},
+	{x=0, z=-1, f=2},
+	{x=0, z=-2, f=2},
+	
+}
+minetest.is_protected = function(pos, player, ...) --Protect the bottom of the portal
+	local pos1 = vector.new(pos.x, pos.y + 1, pos.z) --Allocate
+	local portal
+	local b1, b2
+	for _,pos2 in pairs(basecheck) do
+		pos1.x = pos.x + pos2.x
+		pos1.z = pos.z + pos2.z
+		portal = meseportals.findPortal(pos1)
+		if portal then
+			if pos2.f == 0 then return true end --Right under
+			if (pos2.f == 1) == (portal.dir == 0 or portal.dir == 2) then --Adjacent, XNOR with facedir
+				return true
+			end
+		end
+	end
+	return old_protected(pos, player, ...)
+end
 
 local usePortalController = function(pos, clicker)
 	if meseportals.findPortal(pos) then

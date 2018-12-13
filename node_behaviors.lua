@@ -23,36 +23,24 @@ minetest.register_abm({
 	chance = 1,
 	action = function(pos)
 		local current_portal = meseportals.findPortal(pos)
-		if current_portal then
-			if current_portal["updateme"] then
-				if current_portal["destination"] == nil then
-					if minetest.get_node(pos).name ~= "meseportals:portalnode_off" then
-						minetest.sound_play("meseportal_close", {pos = pos, max_hear_distance = 72,})
-					end
-					meseportals.swap_portal_node(pos,"meseportals:portalnode_off",current_portal["dir"])
-				else
-					meseportals.swap_portal_node(pos,"meseportals:portalnode_on",current_portal["dir"])
-					minetest.sound_play("meseportal_open", {pos = pos, max_hear_distance = 72,})
-				end
-				current_portal["updateme"] = false
-				meseportals.save_data(current_portal["owner"])
+		if not current_portal then
+			minetest.remove_node(pos)
+			return
+		end
+		local meta = minetest.get_meta(pos)
+		if current_portal["type"]=="private" and meseportals.allowPrivatePortals then 
+			infotext="Private Portal"
+		else
+			infotext=(current_portal["description"])
+			if meseportals.allowPrivatePortals then 
+				infotext=infotext.." (Public Portal)\n".."Owned by "..current_portal["owner"]
 			end
-			
-			local meta = minetest.get_meta(pos)
-			if current_portal["type"]=="private" and meseportals.allowPrivatePortals then 
-				infotext="Private Portal"
-			else
-				infotext=(current_portal["description"])
-				if meseportals.allowPrivatePortals then 
-					infotext=infotext.." (Public Portal)\n".."Owned by "..current_portal["owner"]
-				end
-				local dest_portal = meseportals.findPortal(current_portal["destination"])
-				if dest_portal then
-					if dest_portal["type"] == "public" or not meseportals.allowPrivatePortals then
-						infotext=infotext.."\nDestination: " ..current_portal["destination_description"] .." ("..current_portal["destination"].x..","..current_portal["destination"].y..","..current_portal["destination"].z..") "
-					else
-						infotext=infotext.."\nDestination: Private Portal"
-					end
+			local dest_portal = meseportals.findPortal(current_portal["destination"])
+			if dest_portal then
+				if dest_portal["type"] == "public" or not meseportals.allowPrivatePortals then
+					infotext=infotext.."\nDestination: " ..current_portal["destination_description"] .." ("..current_portal["destination"].x..","..current_portal["destination"].y..","..current_portal["destination"].z..") "
+				else
+					infotext=infotext.."\nDestination: Private Portal"
 				end
 			end
 			meta:set_string("infotext",infotext)
@@ -64,8 +52,26 @@ minetest.register_abm({
 minetest.register_globalstep(function(dtime)
 	for _, skip in pairs(meseportals_network) do
 		for __, portal in pairs(skip) do
-			if portal ~= nil then
+			if portal then
 				local pos = portal["pos"]
+				--Update node
+				if portal["updateme"] and minetest.get_node_or_nil(pos) then
+					if portal["destination"] == nil then
+						if minetest.get_node(pos).name ~= "meseportals:portalnode_off" then
+							minetest.sound_play("meseportal_close", {pos = pos, gain=0.6, max_hear_distance = 40})
+						end
+						meseportals.swap_portal_node(pos,"meseportals:portalnode_off",portal["dir"])
+					else
+						meseportals.swap_portal_node(pos,"meseportals:portalnode_on",portal["dir"])
+						minetest.sound_play("meseportal_open", {pos = pos, gain=0.6, max_hear_distance = 40})
+					end
+					portal["updateme"] = false
+					meseportals.save_data(portal["owner"])
+				end
+				
+				
+				
+				--Teleport players
 				local dest_portal=meseportals.findPortal(portal["destination"])
 				if dest_portal then
 					local pos1 = vector.new(dest_portal["pos"])
@@ -112,10 +118,10 @@ minetest.register_globalstep(function(dtime)
 								object:moveto(pos1,false)
 								object:set_look_horizontal(math.rad(dest_angle))
 								if object:is_player() then
-									minetest.sound_play("meseportal_warp", {to_player=object:get_player_name(), gain=1.0, max_hear_distance=15})
+									minetest.sound_play("meseportal_warp", {to_player=object:get_player_name(), gain=0.6, max_hear_distance=15})
 								end
-								minetest.sound_play("meseportal_warp", {pos = pos, gain=1.0, max_hear_distance=15})
-								minetest.sound_play("meseportal_warp", {pos = pos1, gain=1.0, max_hear_distance=15})
+								minetest.sound_play("meseportal_warp", {pos = pos, gain=0.6, max_hear_distance=15})
+								minetest.sound_play("meseportal_warp", {pos = pos1, gain=0.6, max_hear_distance=15})
 							end
 						end
 					end
