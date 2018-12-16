@@ -27,33 +27,17 @@ minetest.register_abm({
 			minetest.remove_node(pos)
 			return
 		end
-		local meta = minetest.get_meta(pos)
-		if current_portal["type"]=="private" and meseportals.allowPrivatePortals then 
-			infotext="Private Portal"
-		else
-			infotext=(current_portal["description"])
-			if meseportals.allowPrivatePortals then 
-				infotext=infotext.." (Public Portal)\n".."Owned by "..current_portal["owner"]
-			end
-			local dest_portal = meseportals.findPortal(current_portal["destination"])
-			if dest_portal then
-				if dest_portal["type"] == "public" or not meseportals.allowPrivatePortals then
-					infotext=infotext.."\nDestination: " ..current_portal["destination_description"] .." ("..current_portal["destination"].x..","..current_portal["destination"].y..","..current_portal["destination"].z..") "
-				else
-					infotext=infotext.."\nDestination: Private Portal"
-				end
-			end
-			meta:set_string("infotext",infotext)
-		end
+		
 	end
 })
 
 
 minetest.register_globalstep(function(dtime)
+	local meta, infotext, pos1, pos, dir, dir1, hdiff, dest_portal
 	for _, skip in pairs(meseportals_network) do
 		for __, portal in pairs(skip) do
 			if portal then
-				local pos = portal["pos"]
+				pos = portal["pos"]
 				--Update node
 				if portal["updateme"] and minetest.get_node_or_nil(pos) then
 					if portal["destination"] == nil then
@@ -67,19 +51,37 @@ minetest.register_globalstep(function(dtime)
 					end
 					portal["updateme"] = false
 					meseportals.save_data(portal["owner"])
+					meta = minetest.get_meta(pos)
+					if portal["type"]=="private" and meseportals.allowPrivatePortals then 
+						infotext="Private Portal"
+					else
+						infotext=(portal["description"])
+						if meseportals.allowPrivatePortals then 
+							infotext=infotext.." (Public Portal)\n".."Owned by "..portal["owner"]
+						end
+						dest_portal = meseportals.findPortal(portal["destination"])
+						if dest_portal then
+							if dest_portal["type"] == "public" or not meseportals.allowPrivatePortals then
+								infotext=infotext.."\nDestination: " ..portal["destination_description"] .." ("..portal["destination"].x..","..portal["destination"].y..","..portal["destination"].z..") "
+							else
+								infotext=infotext.."\nDestination: Private Portal"
+							end
+						end
+					end
+					meta:set_string("infotext",infotext)
 				end
 				
 				
 				
 				--Teleport players
-				local dest_portal=meseportals.findPortal(portal["destination"])
+				dest_portal=meseportals.findPortal(portal["destination"])
 				if dest_portal then
-					local pos1 = vector.new(dest_portal["pos"])
+					pos1 = vector.new(dest_portal["pos"])
 					if dest_portal["destination"] then 
 						for _,object in pairs(core.get_objects_inside_radius({x = pos.x, y = pos.y, z = pos.z}, 2)) do
-							local dir = portal.dir
-							local dir1 = portal.destination_dir
-							local hdiff = nil
+							dir = portal.dir
+							dir1 = portal.destination_dir
+							hdiff = nil
 							if dir == 1
 							or dir == 3 then
 								if math.floor(object:get_pos().x + 0.5) == pos.x then
