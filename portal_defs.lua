@@ -290,8 +290,11 @@ minetest.register_node("meseportals:portalnode_off",{
 				pos.y = pos.y + 1
 				minetest.set_node(pos, node)
 			end
-			placeportal(placer,pos)
-			return itemstack
+			if placeportal(placer,pos) then
+				return itemstack
+			else
+				return nil
+			end
 		end
 	end,
 	on_rightclick=meseportals.portalFormspecHandler,
