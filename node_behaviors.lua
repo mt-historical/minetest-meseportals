@@ -77,54 +77,52 @@ minetest.register_globalstep(function(dtime)
 				dest_portal=meseportals.findPortal(portal["destination"])
 				if dest_portal then
 					pos1 = vector.new(dest_portal["pos"])
-					if dest_portal["destination"] then 
-						for _,object in pairs(core.get_objects_inside_radius({x = pos.x, y = pos.y, z = pos.z}, 2)) do
-							dir = portal.dir
-							dir1 = portal.destination_dir
-							hdiff = nil
-							if dir == 1
-							or dir == 3 then
-								if math.floor(object:get_pos().x + 0.5) == pos.x then
-									hdiff = (object:get_pos().z - pos.z)
-								end
-							else
-								if math.floor(object:get_pos().z + 0.5) == pos.z then
-									hdiff = (object:get_pos().x - pos.x)
-								end
+					dir = portal.dir
+					dir1 = portal.destination_dir
+					hdiff = nil
+					for _,object in pairs(core.get_objects_inside_radius({x = pos.x, y = pos.y, z = pos.z}, 2)) do
+						if dir == 1
+						or dir == 3 then
+							if math.floor(object:get_pos().x + 0.5) == pos.x then
+								hdiff = (object:get_pos().z - pos.z)
 							end
-							if hdiff then
-								pos1.y = pos1.y + (object:get_pos().y - pos.y) + 0.2
-								local dest_angle = ((dir1 - 2) * -90) 
-								
-								if object:get_look_horizontal() then
-									dest_angle = (math.deg(object:get_look_horizontal()) + 180) + ((dir1 - dir) * -90)
-								end
-								
-								if dir == 1 or dir == 2 then
-									hdiff = -hdiff
-								end
-								--hdiff = -1
-								if dir1 == 0 then --ALL CORRECT
-									pos1.z = pos1.z-1.25
-									pos1.x = pos1.x - hdiff
-								elseif dir1 == 1 then
-									pos1.x = pos1.x-1.25
-									pos1.z = pos1.z + hdiff
-								elseif dir1 == 2 then
-									pos1.z=pos1.z+1.25
-									pos1.x = pos1.x + hdiff
-								elseif dir1 == 3 then
-									pos1.x = pos1.x+1.25
-									pos1.z = pos1.z - hdiff
-								end
-								object:moveto(pos1,false)
-								object:set_look_horizontal(math.rad(dest_angle))
-								if object:is_player() then
-									minetest.sound_play("meseportal_warp", {to_player=object:get_player_name(), gain=0.6, max_hear_distance=15})
-								end
-								minetest.sound_play("meseportal_warp", {pos = pos, gain=0.6, max_hear_distance=15})
-								minetest.sound_play("meseportal_warp", {pos = pos1, gain=0.6, max_hear_distance=15})
+						else
+							if math.floor(object:get_pos().z + 0.5) == pos.z then
+								hdiff = (object:get_pos().x - pos.x)
 							end
+						end
+						if hdiff then
+							pos1.y = pos1.y + (object:get_pos().y - pos.y) + 0.2
+							local dest_angle = ((dir1 - 2) * -90) 
+							
+							if object:get_look_horizontal() then
+								dest_angle = (math.deg(object:get_look_horizontal()) + 180) + ((dir1 - dir) * -90)
+							end
+							
+							if dir == 1 or dir == 2 then
+								hdiff = -hdiff
+							end
+							--hdiff = -1
+							if dir1 == 0 then --ALL CORRECT
+								pos1.z = pos1.z-1.25
+								pos1.x = pos1.x - hdiff
+							elseif dir1 == 1 then
+								pos1.x = pos1.x-1.25
+								pos1.z = pos1.z + hdiff
+							elseif dir1 == 2 then
+								pos1.z=pos1.z+1.25
+								pos1.x = pos1.x + hdiff
+							elseif dir1 == 3 then
+								pos1.x = pos1.x+1.25
+								pos1.z = pos1.z - hdiff
+							end
+							object:moveto(pos1,false)
+							object:set_look_horizontal(math.rad(dest_angle))
+							if object:is_player() then
+								minetest.sound_play("meseportal_warp", {to_player=object:get_player_name(), gain=0.6, max_hear_distance=15})
+							end
+							minetest.sound_play("meseportal_warp", {pos = pos, gain=0.6, max_hear_distance=15})
+							minetest.sound_play("meseportal_warp", {pos = pos1, gain=0.6, max_hear_distance=15})
 						end
 					end
 				else 
