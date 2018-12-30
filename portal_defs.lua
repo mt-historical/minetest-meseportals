@@ -160,27 +160,13 @@ local function removeportal(pos)
 	end
 end
 
-local function portalCanDig(pos, player)
-	if minetest.check_player_privs(player, {protection_bypass=true}) or not minetest.is_protected(pos, player:get_player_name()) then
-		local isAdmin = minetest.check_player_privs(player, {msp_admin=true})
-		if meseportals.allowPrivatePortals and meseportals.findPortal(pos) ~= nil and not isAdmin then --Anyone can clean up a busted portal
-			if player:get_player_name() ~= meseportals.findPortal(pos)["owner"] then
-				minetest.chat_send_player(player:get_player_name(), "This portal belongs to " ..meseportals.findPortal(pos)["owner"] .."!")
-			end
-			return player:get_player_name() == meseportals.findPortal(pos)["owner"]
-		else
-			return true
-		end
-	end
-end
-
 local msp_selection_box = {
 	type = "fixed",
 	fixed={{-2.5,-1.5,-0.2,2.5,3.5,0.2},},
 }
 
-local msp_groups = {dig_immediate=3,oddly_breakable_by_hand=1,not_in_creative_inventory=1}
-local msp_groups1 = {dig_immediate=3,oddly_breakable_by_hand=1}
+local msp_groups = {cracky=2,not_in_creative_inventory=1}
+local msp_groups1 = {cracky=2}
 
 
 local old_pttfp = minetest.pointed_thing_to_face_pos
@@ -240,7 +226,6 @@ minetest.register_node("meseportals:portalnode_on",{
 	light_source = 5,
 	selection_box = msp_selection_box,
 	walkable = false,
-	can_dig = portalCanDig,
 	on_destruct = removeportal,
 	on_rightclick=meseportals.portalFormspecHandler,
 })
@@ -266,7 +251,6 @@ minetest.register_node("meseportals:portalnode_off",{
 	visual_scale = 5.0,
 	selection_box = msp_selection_box,
 	walkable = false,
-	can_dig = portalCanDig,
 	on_destruct = removeportal,
 	on_place = function(itemstack, placer, pointed_thing)
 		
@@ -313,12 +297,10 @@ local basecheck = { --f = face (x or z axis)
 	{x=0, z=2, f=2},
 	{x=0, z=-1, f=2},
 	{x=0, z=-2, f=2},
-	
 }
 minetest.is_protected = function(pos, player, ...) --Protect the bottom of the portal
 	local pos1 = vector.new(pos.x, pos.y + 1, pos.z) --Allocate
 	local portal
-	local b1, b2
 	for _,pos2 in pairs(basecheck) do
 		pos1.x = pos.x + pos2.x
 		pos1.z = pos.z + pos2.z
@@ -329,6 +311,11 @@ minetest.is_protected = function(pos, player, ...) --Protect the bottom of the p
 				return true
 			end
 		end
+	end
+	portal = meseportals.findPortal(pos)
+	if portal and portal.owner ~= player and not minetest.check_player_privs(player, {msp_admin=true}) then
+		minetest.chat_send_player(player, "This portal belongs to " ..portal["owner"] .."!")
+		return true
 	end
 	return old_protected(pos, player, ...)
 end

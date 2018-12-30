@@ -38,39 +38,46 @@ minetest.register_globalstep(function(dtime)
 		for __, portal in pairs(skip) do
 			if portal then
 				pos = portal["pos"]
-				--Update node
-				if portal["updateme"] and minetest.get_node_or_nil(pos) then
-					if portal["destination"] == nil then
-						if minetest.get_node(pos).name ~= "meseportals:portalnode_off" then
-							minetest.sound_play("meseportal_close", {pos = pos, gain=0.6, max_hear_distance = 40})
+				
+				
+				if minetest.get_node_or_nil(pos) then -- Check and update node
+					if minetest.get_node(pos).name ~= "meseportals:portalnode_off" and minetest.get_node(pos).name ~= "meseportals:portalnode_on" then --Portal broke
+						if portal["destination"] then
+							meseportals.deactivatePortal(portal["destination"])
 						end
-						meseportals.swap_portal_node(pos,"meseportals:portalnode_off",portal["dir"])
-					else
-						meseportals.swap_portal_node(pos,"meseportals:portalnode_on",portal["dir"])
-						minetest.sound_play("meseportal_open", {pos = pos, gain=0.6, max_hear_distance = 40})
-					end
-					portal["updateme"] = false
-					meseportals.save_data(portal["owner"])
-					meta = minetest.get_meta(pos)
-					if portal["type"]=="private" and meseportals.allowPrivatePortals then 
-						infotext="Private Portal"
-					else
-						infotext=(portal["description"])
-						if meseportals.allowPrivatePortals then 
-							infotext=infotext.." (Public Portal)\n".."Owned by "..portal["owner"]
+						meseportals.unregisterPortal(pos)
+					elseif portal["updateme"] then
+						if portal["destination"] == nil then
+							if minetest.get_node(pos).name ~= "meseportals:portalnode_off" then
+								minetest.sound_play("meseportal_close", {pos = pos, gain=0.6, max_hear_distance = 40})
+							end
+							meseportals.swap_portal_node(pos,"meseportals:portalnode_off",portal["dir"])
+						else
+							meseportals.swap_portal_node(pos,"meseportals:portalnode_on",portal["dir"])
+							minetest.sound_play("meseportal_open", {pos = pos, gain=0.6, max_hear_distance = 40})
 						end
-						dest_portal = meseportals.findPortal(portal["destination"])
-						if dest_portal then
-							if dest_portal["type"] == "public" or not meseportals.allowPrivatePortals then
-								infotext=infotext.."\nDestination: " ..portal["destination_description"] .." ("..portal["destination"].x..","..portal["destination"].y..","..portal["destination"].z..") "
-							else
-								infotext=infotext.."\nDestination: Private Portal"
+						portal["updateme"] = false
+						meseportals.save_data(portal["owner"])
+						meta = minetest.get_meta(pos)
+						if portal["type"]=="private" and meseportals.allowPrivatePortals then 
+							infotext="Private Portal"
+						else
+							infotext=(portal["description"])
+							if meseportals.allowPrivatePortals then 
+								infotext=infotext.." (Public Portal)\n".."Owned by "..portal["owner"]
+							end
+							dest_portal = meseportals.findPortal(portal["destination"])
+							if dest_portal then
+								if dest_portal["type"] == "public" or not meseportals.allowPrivatePortals then
+									infotext=infotext.."\nDestination: " ..portal["destination_description"] .." ("..portal["destination"].x..","..portal["destination"].y..","..portal["destination"].z..") "
+								else
+									infotext=infotext.."\nDestination: Private Portal"
+								end
 							end
 						end
+						meta:set_string("infotext",infotext)
 					end
-					meta:set_string("infotext",infotext)
 				end
-				
 				
 				
 				--Teleport players
