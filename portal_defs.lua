@@ -423,15 +423,9 @@ minetest.register_node("meseportals:unlinked_portal_controller", {
 				if portal then
 					if portal["type"] == "public" or placer:get_player_name() == portal["owner"] or minetest.check_player_privs(placer, {msp_admin=true}) then
 						minetest.chat_send_player(placer:get_player_name(), "Controller linked to "..portal["description"])
-						local newItem = itemstack:take_item()
-						local inv = placer:get_inventory()
-						newItem:set_name("meseportals:linked_portal_controller")
-						newItem:get_meta():set_string("portal", minetest.pos_to_string(pointed_thing.under))
-						newItem:get_meta():set_string("description", "Linked Portal Controller ["..portal["description"].."]")
-						
-						if inv:add_item("main", newItem):get_count() > 0 then --Not enough inventory space, drop on the ground
-							minetest.add_item(placer:get_pos(), newItem)
-						end
+						itemstack:set_name("meseportals:linked_portal_controller")
+						itemstack:get_meta():set_string("portal", minetest.pos_to_string(pointed_thing.under))
+						itemstack:get_meta():set_string("description", "Linked Portal Controller ["..portal["description"].."]")
 						return itemstack
 					else
 						minetest.chat_send_player(placer:get_player_name(), portal["owner"] .." has set this portal to private.")
