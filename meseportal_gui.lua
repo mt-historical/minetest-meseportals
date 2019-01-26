@@ -220,7 +220,7 @@ meseportals.get_formspec = function(player_name,page)
 		end
 		end
 	end
-	formspec=formspec.."label[7.5,1.7;Page: "..page.." of "..pagemax.."]"
+	formspec=formspec.."label[7.5,1.7;Page: "..((pagemax > 0) and (page + 1) or 0).." of "..pagemax.."]"
 	formspec = formspec.."image_button[6.5,1.8;.6,.6;meseportal_left_icon.png;page_left;]"
 	formspec = formspec.."image_button[6.9,1.8;.6,.6;meseportal_right_icon.png;page_right;]"
 	if isAdmin then formspec = formspec.."image_button_exit[5.1,9.3;.8,.8;meseportal_adminlock.png;lock_and_save;]" end
@@ -310,10 +310,11 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 		local start_i=start
 		local pagemax
 		if meseportals_gui["players"][player_name]["dest_type"] == "own" then
-			pagemax = math.floor(((meseportals_gui["players"][player_name]["own_portals_count"]) / 24) + 1)
+			pagemax = math.ceil((meseportals_gui["players"][player_name]["own_portals_count"]) / 24)
 		else
-			pagemax = math.floor(((meseportals_gui["players"][player_name]["public_portals_count"]) / 24) + 1)
+			pagemax = math.ceil((meseportals_gui["players"][player_name]["public_portals_count"]) / 24)
 		end
+		if pagemax == 0 then pagemax = 1 end
 		if fields.page_left then
 			minetest.sound_play("paperflip2", {to_player=player_name, gain = 1.0})
 			start_i = start_i - 1
