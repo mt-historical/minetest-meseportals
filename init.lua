@@ -1,12 +1,11 @@
--- Minetest 0.4.5 : meseportals
-
 --data tables definitions
 meseportals={}
 meseportals_network = {}
 meseportals_gui = {}
 
 meseportals.allowPrivatePortals = true
-meseportals.maxPlayerPortals = 14 --Set to 0 or lower to restrict portal placement to those with msp_unlimited privilege
+meseportals.maxPlayerPortals = 14 -- Set to 0 or lower to restrict portal placement to only players with msp_unlimited privilege
+meseportals.close_after = 120 -- Automatically close portals after a while (default: 2 min)
 
 meseportals.default_page = "main"
 meseportals_gui["players"]={}

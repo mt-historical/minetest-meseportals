@@ -12,6 +12,8 @@ end
 
 minetest.register_node("meseportals:portal_collider",{
 	drawtype = "airlike",
+	on_blast = function() end,
+	drop = "",
 	groups = {not_in_creative_inventory=1},
 	sunlight_propagates = true,
 	can_dig = false,
@@ -230,7 +232,6 @@ minetest.register_node("meseportals:portalnode_on",{
 	on_rightclick=meseportals.portalFormspecHandler,
 })
 
-
 minetest.register_node("meseportals:portalnode_off",{
 	description = "Mese Portal (Sneak+Place = Buried)",
 	inventory_image = "meseportal.png",
@@ -313,10 +314,17 @@ minetest.is_protected = function(pos, player, ...) --Protect the bottom of the p
 		end
 	end
 	portal = meseportals.findPortal(pos)
-	if portal and portal.owner ~= player and not minetest.check_player_privs(player, {msp_admin=true}) then
-		minetest.chat_send_player(player, "This portal belongs to " ..portal["owner"] .."!")
-		return true
+	if portal and not minetest.check_player_privs(player, {msp_admin=true}) then 
+		if portal.owner ~= player then
+			minetest.chat_send_player(player, "This portal belongs to " ..portal["owner"] .."!")
+			return true
+		end
+		if portal.admin_lock then
+			minetest.chat_send_player(player, "This portal has been locked by an admin.")
+			return true
+		end
 	end
+	
 	return old_protected(pos, player, ...)
 end
 

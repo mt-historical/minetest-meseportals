@@ -53,7 +53,7 @@ meseportals.searchportals = function(pos, player_name, isAdmin)
 		local temp=tab["player_name"]
 		for __,portals in ipairs(meseportals_network[temp]) do
 			if string.find(portals["description"], meseportals_gui["players"][player_name]["query"]) then
-				if portals["type"]=="public" or isAdmin or not meseportals.allowPrivatePortals then
+				if portals["type"]=="public" or portal["owner"] == player_name or isAdmin or not meseportals.allowPrivatePortals then
 					if portals["pos"].x==pos.x and portals["pos"].y==pos.y and portals["pos"].z==pos.z then
 						--current_portal=portals
 					else
@@ -177,10 +177,10 @@ meseportals.get_formspec = function(player_name,page)
 	end
 	
 	local list_index=meseportals_gui["players"][player_name]["current_index"]
-	local page=math.floor(list_index / 24 + 1)
+	local page=math.ceil(list_index / 24)
 	local pagemax
 	if meseportals_gui["players"][player_name]["dest_type"] == "own" then
-		pagemax = math.floor((meseportals_gui["players"][player_name]["own_portals_count"] / 24) + 1)
+		pagemax = math.ceil((meseportals_gui["players"][player_name]["own_portals_count"] / 24))
 		local x,y
 		for y=0,7,1 do
 		for x=0,2,1 do
@@ -198,7 +198,7 @@ meseportals.get_formspec = function(player_name,page)
 		end
 		end
 	else
-		pagemax = math.floor(meseportals_gui["players"][player_name]["public_portals_count"] / 24 + 1)
+		pagemax = math.ceil(meseportals_gui["players"][player_name]["public_portals_count"] / 24)
 		local x,y
 		for y=0,7,1 do
 		for x=0,2,1 do
@@ -223,6 +223,7 @@ meseportals.get_formspec = function(player_name,page)
 	formspec=formspec.."label[7.5,1.7;Page: "..page.." of "..pagemax.."]"
 	formspec = formspec.."image_button[6.5,1.8;.6,.6;meseportal_left_icon.png;page_left;]"
 	formspec = formspec.."image_button[6.9,1.8;.6,.6;meseportal_right_icon.png;page_right;]"
+	if isAdmin then formspec = formspec.."image_button_exit[5.1,9.3;.8,.8;meseportal_adminlock.png;lock_and_save;]" end
 	formspec = formspec.."image_button_exit[6.1,9.3;.8,.8;meseportal_ok_icon.png;save_changes;]"
 	formspec = formspec.."image_button_exit[7.1,9.3;.8,.8;meseportal_cancel_icon.png;discard_changes;]"
 	return formspec
@@ -234,9 +235,14 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 	local player_name = player:get_player_name()
 	local isAdmin = minetest.check_player_privs(player, {msp_admin=true})
 	local temp_portal=meseportals_gui["players"][player_name]["temp_portal"]
+	if not temp_portal then return end
 	local current_portal=meseportals.findPortal(meseportals_gui["players"][player_name]["temp_portal"]["pos"])
 	local formspec
 	if current_portal then
+		if (player_name ~= current_portal["owner"] and temp_portal["type"] == "private" and not isAdmin) and meseportals.allowPrivatePortals then
+			reportFormspecViolation(player_name, "accessed someone else's private portal!")
+			return
+		end
 		if player_name == current_portal["owner"] or isAdmin or not meseportals.allowPrivatePortals then
 			if fields.toggle_type then
 				if temp_portal["type"] == "private" then
@@ -330,7 +336,19 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 				minetest.show_formspec(player_name, "meseportals_main", formspec)
 			end
 		end
+		
+		
 
+		if fields.discard_changes then
+			minetest.sound_play("click", {to_player=player_name, gain = 0.5})
+		end
+		
+		if current_portal.admin_lock and not isAdmin then
+			minetest.chat_send_player(player_name, "This portal has been locked by an admin.")
+			return
+		end
+		
+		
 		if fields.remove_dest then
 			minetest.sound_play("click", {to_player=player_name, gain = 0.5})
 			temp_portal["destination"]=nil
@@ -340,10 +358,8 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 			minetest.show_formspec(player_name, "meseportals_main", formspec)
 		end
 
-		if fields.save_changes then
+		if fields.save_changes or fields.lock_and_save then
 			minetest.sound_play("click", {to_player=player_name, gain = 0.5})
-			local meta = minetest.get_meta(temp_portal["pos"])
-			local infotext=""
 			if player_name == current_portal["owner"] or isAdmin or not meseportals.allowPrivatePortals then
 				if fields.desc_box ~= nil then
 					temp_portal["description"]=getCleanText(player_name, fields.desc_box) 
@@ -351,10 +367,16 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 				current_portal["type"]=temp_portal["type"]
 				current_portal["description"]=temp_portal["description"]
 			end
-			current_portal["dest"]=temp_portal["dest"]
 			if temp_portal["destination"] then
 				local dest_portal = meseportals.findPortal(temp_portal["destination"])
 				if dest_portal then
+					if isAdmin then 
+						current_portal.admin_lock = fields.lock_and_save 
+						dest_portal.admin_lock = fields.lock_and_save 
+						
+					elseif fields.lock_and_save then
+						reportFormspecViolation(player_name, "attempted to admin-lock a portal while missing msp_admin privilege!")
+					end
 					if dest_portal["type"] ~= "private" or dest_portal["owner"] == player_name or isAdmin then
 						if current_portal["destination"] ~= nil then
 							current_portal["destination_deactivate"] = vector.new(current_portal["destination"])
@@ -367,7 +389,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 						reportFormspecViolation(player_name, "attempted to connect to private portal at "..minetest.pos_to_string(dest_portal.pos).." from "..minetest.pos_to_string(current_portal.pos))
 					end
 				else
-					minetest.chat_send_player(player_name, "The portal seems to have vanished while you were still in the menu...")
+					minetest.chat_send_player(player_name, "The destination portal seems to have vanished while you were in the menu...")
 				end
 			else
 				if current_portal["destination"] ~= nil then
@@ -377,15 +399,22 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 			end
 		
 			if current_portal["destination_deactivate"] ~= nil then
+				if not temp_portal["destination"] then 
+					current_portal.admin_lock = nil
+				end
 				if meseportals.findPortal(current_portal["destination_deactivate"]) then
+					meseportals.findPortal(current_portal["destination_deactivate"]).admin_lock = nil
 					meseportals.deactivatePortal (current_portal["destination_deactivate"])
 					current_portal["destination_deactivate"] = nil
 				end
 			end
+			
 			if meseportals.findPortal(current_portal["destination"]) then
 				local dest_portal = meseportals.findPortal(current_portal["destination"])
 				if dest_portal["destination"] == nil or isAdmin then
-					if dest_portal["destination"] then --Admin can interrupt an existing connection
+					dest_portal.admin_lock = current_portal.admin_lock 
+					-- Connecting to a portal, its locked state becomes the same as this portal.
+					if dest_portal["destination"] then --Admin can interrupt any existing connection
 						meseportals.deactivatePortal(dest_portal["destination"])
 					end
 					meseportals.activatePortal (current_portal.pos)
@@ -393,6 +422,7 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 					dest_portal["destination_description"] = current_portal["description"]
 					dest_portal["destination_dir"] = current_portal["dir"]
 					meseportals.activatePortal (dest_portal.pos)
+					current_portal["time"] = meseportals.close_after
 				else
 					minetest.chat_send_player(player_name, "Connection failed: Portal is busy.")
 					meseportals.deactivatePortal (current_portal["pos"])
@@ -400,39 +430,32 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 			else
 				meseportals.deactivatePortal (current_portal["pos"])
 			end
-		
+			
 			if meseportals.save_data(current_portal["owner"])==nil then
 				print ("[meseportals] Couldnt update network file!")
 			end
 		end
 
-		if fields.discard_changes then
-			minetest.sound_play("click", {to_player=player_name, gain = 0.5})
-		end
-
 		local list_index=meseportals_gui["players"][player_name]["current_index"]
 		local i
 		for i=0,23,1 do
-		local button="list_button"..i+list_index
-		if fields[button] then
-			minetest.sound_play("click", {to_player=player_name, gain = 1.0})
-			local portal=meseportals_gui["players"][player_name]["temp_portal"]
-			local dest_portal
-			if meseportals_gui["players"][player_name]["dest_type"] == "own" then
-				dest_portal=meseportals_gui["players"][player_name]["own_portals"][list_index+i+1]
-			else
-				dest_portal=meseportals_gui["players"][player_name]["public_portals"][list_index+i+1]
+			local button="list_button"..i+list_index
+			if fields[button] then
+				minetest.sound_play("click", {to_player=player_name, gain = 1.0})
+				local portal=meseportals_gui["players"][player_name]["temp_portal"]
+				local dest_portal
+				if meseportals_gui["players"][player_name]["dest_type"] == "own" then
+					dest_portal=meseportals_gui["players"][player_name]["own_portals"][list_index+i+1]
+				else
+					dest_portal=meseportals_gui["players"][player_name]["public_portals"][list_index+i+1]
+				end
+				portal["destination"]=vector.new(dest_portal["pos"])
+				portal["destination_description"]=dest_portal["description"]
+				portal["destination_dir"]=dest_portal["dir"]
+				formspec = meseportals.get_formspec(player_name,"main")
+				meseportals_gui["players"][player_name]["formspec"] = formspec
+				minetest.show_formspec(player_name, "meseportals_main", formspec)
 			end
-			portal["destination"]={}
-			portal["destination"].x=dest_portal["pos"].x
-			portal["destination"].y=dest_portal["pos"].y
-			portal["destination"].z=dest_portal["pos"].z
-			portal["destination_description"]=dest_portal["description"]
-			portal["destination_dir"]=dest_portal["dir"]
-			formspec = meseportals.get_formspec(player_name,"main")
-			meseportals_gui["players"][player_name]["formspec"] = formspec
-			minetest.show_formspec(player_name, "meseportals_main", formspec)
 		end
-	end
 	end
 end)
