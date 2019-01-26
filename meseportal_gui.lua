@@ -37,13 +37,13 @@ meseportals.searchportals = function(pos, player_name, isAdmin)
 	local own_portals_count=0
 	local public_portals_count=0
 	
-	for __,portals in ipairs(meseportals_network[player_name]) do
-		if portals["pos"].x==pos.x and portals["pos"].y==pos.y and portals["pos"].z==pos.z then
+	for __,portal in ipairs(meseportals_network[player_name]) do
+		if portal["pos"].x==pos.x and portal["pos"].y==pos.y and portal["pos"].z==pos.z then
 			--current_portal=portals
 		else
 			own_portals_count=own_portals_count+1
-			if string.find(portals["description"], meseportals_gui["players"][player_name]["query"]) then
-				table.insert(meseportals_gui["players"][player_name]["own_portals"],portals)
+			if string.find(portal["description"], meseportals_gui["players"][player_name]["query"]) then
+				table.insert(meseportals_gui["players"][player_name]["own_portals"],portal)
 			end
 		end
 	end
@@ -51,14 +51,14 @@ meseportals.searchportals = function(pos, player_name, isAdmin)
 	-- get all public portals
 	for __,tab in ipairs(meseportals["registered_players"]) do
 		local temp=tab["player_name"]
-		for __,portals in ipairs(meseportals_network[temp]) do
-			if string.find(portals["description"], meseportals_gui["players"][player_name]["query"]) then
-				if portals["type"]=="public" or portal["owner"] == player_name or isAdmin or not meseportals.allowPrivatePortals then
-					if portals["pos"].x==pos.x and portals["pos"].y==pos.y and portals["pos"].z==pos.z then
+		for __,portal in ipairs(meseportals_network[temp]) do
+			if string.find(portal["description"], meseportals_gui["players"][player_name]["query"]) then
+				if portal["type"]=="public" or portal["owner"] == player_name or isAdmin or not meseportals.allowPrivatePortals then
+					if portal["pos"].x==pos.x and portal["pos"].y==pos.y and portal["pos"].z==pos.z then
 						--current_portal=portals
 					else
 						public_portals_count=public_portals_count+1
-						table.insert(meseportals_gui["players"][player_name]["public_portals"],portals)
+						table.insert(meseportals_gui["players"][player_name]["public_portals"],portal)
 					end
 				end
 			end

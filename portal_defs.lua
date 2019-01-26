@@ -283,7 +283,6 @@ minetest.register_node("meseportals:portalnode_off",{
 		end
 	end,
 	on_rightclick=meseportals.portalFormspecHandler,
-	
 })
 
 local old_protected = minetest.is_protected
