@@ -14,7 +14,7 @@ minetest.register_node("meseportals:portal_collider",{
 	drawtype = "airlike",
 	on_blast = function() end,
 	drop = "",
-	groups = {not_in_creative_inventory=1},
+	groups = {not_in_creative_inventory=1,fragile=2},
 	sunlight_propagates = true,
 	can_dig = false,
 	paramtype = "light",
@@ -167,8 +167,8 @@ local msp_selection_box = {
 	fixed={{-2.5,-1.5,-0.2,2.5,3.5,0.2},},
 }
 
-local msp_groups = {cracky=2,not_in_creative_inventory=1}
-local msp_groups1 = {cracky=2}
+local msp_groups = {cracky=2,not_in_creative_inventory=1,fragile=2}
+local msp_groups1 = {cracky=2,fragile=2}
 
 
 local old_pttfp = minetest.pointed_thing_to_face_pos
@@ -345,7 +345,7 @@ minetest.register_node("meseportals:linked_portal_controller", {
 	paramtype2 = "facedir",
 	mesh = "meseportal_controller.obj",
 	drop = "meseportals:unlinked_portal_controller",
-	groups = msp_groups,
+	groups = {cracky=3,oddly_breakable_by_hand=2,not_in_creative_inventory=1},
 	stack_max = 1,
 	walkable = true,
 	light_source = 5,
@@ -412,7 +412,7 @@ minetest.register_node("meseportals:unlinked_portal_controller", {
 	paramtype2 = "facedir",
 	mesh = "meseportal_controller.obj",
 	drop = "meseportals:unlinked_portal_controller",
-	groups = msp_groups1,
+	groups = {cracky=3,oddly_breakable_by_hand=2},
 	walkable = true,
 	selection_box = {
 		type = "fixed",
