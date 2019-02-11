@@ -15,3 +15,6 @@ Changes by Piezo_:
 	Portals and all associated nodes are now fully protection-aware.
 	Reorganized/Split up files
 	Position and rotation relative to the portal are now maintained, making travel feel smoother.
+
+Changes by SpaghettiToastBook:
+	Added meseportals.can_connect
