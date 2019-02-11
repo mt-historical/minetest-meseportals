@@ -69,6 +69,12 @@ meseportals.searchportals = function(pos, player_name, isAdmin)
 
 end
 
+-- Mods can override this to restict portal connections.
+-- Admins ignore this.
+meseportals.can_connect = function(src_portal, dest_portal)
+	return dest_portal["destination"] == nil, "Destination portal is busy."
+end
+
 --show formspec to player
 meseportals.portalFormspecHandler = function(pos, _, clicker, _)
 	if (meseportals.findPortal(pos) ~= nil) then
@@ -412,7 +418,8 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 			
 			if meseportals.findPortal(current_portal["destination"]) then
 				local dest_portal = meseportals.findPortal(current_portal["destination"])
-				if dest_portal["destination"] == nil or isAdmin then
+				local can_connect, fail_reason = meseportals.can_connect(table.copy(current_portal), table.copy(dest_portal))
+				if can_connect or isAdmin then
 					dest_portal.admin_lock = current_portal.admin_lock 
 					-- Connecting to a portal, its locked state becomes the same as this portal.
 					if dest_portal["destination"] then --Admin can interrupt any existing connection
@@ -425,7 +432,12 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 					meseportals.activatePortal (dest_portal.pos)
 					current_portal["time"] = meseportals.close_after
 				else
-					minetest.chat_send_player(player_name, "Connection failed: Portal is busy.")
+					if fail_reason then
+						minetest.chat_send_player(player_name, "Connection failed: " .. fail_reason)
+					else
+						minetest.chat_send_player(player_name, "Connection failed.")
+					end
+					
 					meseportals.deactivatePortal (current_portal["pos"])
 				end
 			else
