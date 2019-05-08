@@ -299,6 +299,7 @@ local basecheck = { --f = face (x or z axis)
 	{x=0, z=-2, f=2},
 }
 minetest.is_protected = function(pos, player, ...) --Protect the bottom of the portal
+	if not pos then return end
 	local pos1 = vector.new(pos.x, pos.y + 1, pos.z) --Allocate
 	local portal
 	for _,pos2 in pairs(basecheck) do

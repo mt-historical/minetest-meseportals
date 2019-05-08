@@ -134,7 +134,6 @@ minetest.register_globalstep(function(dtime)
 									pos1.x = pos1.x+1.25
 									pos1.z = pos1.z - hdiff
 								end
-								object:set_pos(pos1)
 								local vel = object:get_velocity() or object:get_player_velocity()
 								vel.x = -vel.x
 								local magnitude = math.sqrt((vel.x*vel.x) + (vel.z*vel.z))
@@ -149,16 +148,26 @@ minetest.register_globalstep(function(dtime)
 								direction = direction + math.pi + ((dir1 - dir) * -(math.pi/2))
 								vel.x = magnitude * -math.sin(direction)
 								vel.z = magnitude * math.cos(direction)
+								local moved = false
 								if object:is_player() then
-									--player:set_player_velocity(vel) -- TODO: Bother the devs more about this
-									object:set_look_horizontal(dest_angle)
-									minetest.sound_play("meseportal_warp", {to_player=object:get_player_name(), gain=0.6, max_hear_distance=15})
-								else
-									object:set_velocity(vel)
-									object:set_yaw(dest_angle)
+									object:set_pos(pos1)
+									if vector.equals(vector.round(object:get_pos()), vector.round(pos1)) then moved = true end
+								elseif object:get_properties().physical == true then
+									object:set_pos(pos1)
+									moved = true
 								end
-								minetest.sound_play("meseportal_warp", {pos = pos, gain=0.6, max_hear_distance=15})
-								minetest.sound_play("meseportal_warp", {pos = pos1, gain=0.6, max_hear_distance=15})
+								if moved then
+									if object:is_player() then
+										--player:set_player_velocity(vel) -- TODO: Bother the devs more about this
+										object:set_look_horizontal(dest_angle)
+										minetest.sound_play("meseportal_warp", {to_player=object:get_player_name(), gain=0.6, max_hear_distance=15})
+									else
+										object:set_velocity(vel)
+										object:set_yaw(dest_angle)
+									end
+									minetest.sound_play("meseportal_warp", {pos = pos, gain=0.6, max_hear_distance=15})
+									minetest.sound_play("meseportal_warp", {pos = pos1, gain=0.6, max_hear_distance=15})
+								end
 							end
 						end
 					else 
