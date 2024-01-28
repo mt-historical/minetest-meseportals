@@ -230,6 +230,7 @@ minetest.register_node("meseportals:portalnode_on",{
 	walkable = false,
 	on_destruct = removeportal,
 	on_rightclick=meseportals.portalFormspecHandler,
+	use_texture_alpha = "clip",
 })
 
 minetest.register_node("meseportals:portalnode_off",{
@@ -283,6 +284,7 @@ minetest.register_node("meseportals:portalnode_off",{
 		end
 	end,
 	on_rightclick=meseportals.portalFormspecHandler,
+	use_texture_alpha = "clip",
 })
 
 local old_protected = minetest.is_protected
@@ -400,7 +402,8 @@ minetest.register_node("meseportals:linked_portal_controller", {
 	on_rightclick = function(pos, node, clicker)
 		local pos1 = minetest.string_to_pos(minetest.get_meta(pos):get_string("portal"))
 		usePortalController(pos1, clicker)
-	end
+	end,
+	use_texture_alpha = "clip",
 })
 
 minetest.register_node("meseportals:unlinked_portal_controller", {
@@ -454,6 +457,7 @@ minetest.register_node("meseportals:unlinked_portal_controller", {
 	on_rightclick = function(_, __, user)
 		minetest.chat_send_player(user:get_player_name(), "This controller is not linked. Link this controller to a portal by right-clicking the portal.")
 	end,
+	use_texture_alpha = "clip",
 })
 
 minetest.register_craftitem("meseportals:portal_segment", {
